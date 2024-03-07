@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="auxiliars.js"></script>
+    <script type="text/javascript" src="shader.js"></script>
+    <script type="text/javascript" src="cube.js"></script>
+    <script type="text/javascript" src="gl-matrix.js"></script>
+    <script type="text/javascript">
+        var mat4 = glMatrix.mat4;
+        var vec3 = glMatrix.vec3;
+        // Converts from degrees to radians.
+        Math.radians = function(degrees) {
+          return degrees * Math.PI / 180;
+        };
+         
+        // Converts from radians to degrees.
+        Math.degrees = function(radians) {
+          return radians * 180 / Math.PI;
+        };
+    </script>
+<script id="shader-vs-light" type="x-shader/x-vertex">#version 300 es
+    precision mediump float;
+    
+    layout (location = 0) in vec3 aPos;
+    uniform mat4 projection;
+    uniform mat4 view;
+    uniform mat4 model;
+
+    void main()
+    {
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
+    }
+    </script>
+    
+    <script id="shader-fs-light" type="x-shader/x-fragment">#version 300 es
+    precision mediump float;
+    
+    out vec4 FragColor;
+    
+    void main()
+    {
+        vec3 lightColor = vec3(0.0, 1.0, 0.0);
+        
+        FragColor = vec4(lightColor, 1.0);
+    }
+    </script>
+<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+precision mediump float;
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoord;
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+out vec3 Normal;
+
+out vec3 fragPos; 
+
+
+
+
+void main()
+{
+ gl_Position = projection * view * model * vec4(aPos, 1.0);
+ Normal = aNormal;
+ mat3 normalM = mat3( transpose(inverse( model ) ) );
+ Normal = normalM * aNormal;
+
+ fragPos = vec3(model * vec4(aPos, 1.0)); // (model * vec4(aPos, 1.0)).xyz;
+}
+
+
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+precision mediump float;
+
+out vec4 FragColor;
+in vec3 Normal;
+in vec3 fragPos; 
+
+uniform vec3 lightPos;
+
+void main()
+{
+  vec3 lightColor = vec3(0.0, 1.0, 0.0);
+  vec3 objectColor = vec3(1.0, 0.0, 1.0);
+  //vec3 lightPos = vec3( 10.0, 0.0, 1.0);
+
+
+// ambient
+ float ambientStrength = 0.1;
+ vec3 ambient = ambientStrength * lightColor;
+
+ // diffuse
+ vec3 norm = normalize(Normal);
+ vec3 lightDir = normalize(lightPos - fragPos);
+ float diff = max(dot(norm, lightDir), 0.0);
+ vec3 diffuse = diff * lightColor;
+
+ vec3 result = (ambient + diffuse) * objectColor;
+ FragColor = vec4(diffuse, 1.0);
+}
+</script>
+
+</head>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+<script type="text/javascript">
+    var gl = createContext( "myCanvas" );
+
+    var VAO, VBO, VBO2, VBO3, EBO;
+    VAO = gl.createVertexArray();
+    VBO = gl.createBuffer();
+    VBO2 = gl.createBuffer();
+    VBO3 = gl.createBuffer();
+    EBO = gl.createBuffer ();
+    gl.bindVertexArray(VAO);
+    // position attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( cubeVertexPos ),
+    gl.STATIC_DRAW);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(0);
+    // normal attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, VBO2);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( cubeVertexNormal ),
+    gl.STATIC_DRAW);
+    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(1);
+    // texCoord attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, VBO3);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( cubeVertexTexCoord ),
+    gl.STATIC_DRAW);
+    gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(2);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array( cubeTriangleIndex ),
+    gl.STATIC_DRAW);
+
+    // SHADERS PARA EL CUBO
+    var shaderProgram = new ShaderProgram( );
+    shaderProgram.createVertexShader(
+       document.getElementById( "shader-vs" ).text
+    );
+    shaderProgram.createFragmentShader(
+       document.getElementById( "shader-fs" ).text
+    );
+    shaderProgram.compile( );
+    shaderProgram.link( );
+
+    shaderProgram.autocatching( );
+
+    
+    // SHADERS PARA LA LUZ
+    var shaderProgramL = new ShaderProgram( );
+    shaderProgramL.createVertexShader(
+       document.getElementById( "shader-vs-light" ).text
+    );
+    shaderProgramL.createFragmentShader(
+       document.getElementById( "shader-fs-light" ).text
+    );
+    shaderProgramL.compile( );
+    shaderProgramL.link( );
+    shaderProgramL.autocatching( );
+
+
+    function renderFunc( time )
+    {
+        gl.viewport( 0, 0, 500, 500 );
+        gl.clearColor( 0.5, 0.5, 0.0, 1.0 );
+
+        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+        gl.enable( gl.DEPTH_TEST );
+
+        var proj = mat4.create( );
+        mat4.perspective(proj, Math.radians( 60.0 ), 500/500 /*width/height*/, 0.001, 1000.0 );
+        var view = mat4.create( );
+        mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
+        time *= 0.001; // to seconds
+        var angle = time * 25.0;
+        var model = mat4.create( );
+        mat4.translate( model, model, [ 0.0, 0.0, 0.0 ] );
+        mat4.rotate( model, model, Math.radians( angle ), [ 1.0, 0.5, 0.0 ] );
+
+        shaderProgram.bind( );
+
+        shaderProgram.setUniform3f("lightPos", 10.0, 0.0, 1.0);
+        shaderProgram.setUniformMat4( "projection", proj );
+        shaderProgram.setUniformMat4( "view", view );
+        shaderProgram.setUniformMat4( "model", model );
+        gl.bindVertexArray( VAO );
+        gl.drawElements( gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0 );
+
+        shaderProgramL.bind();
+
+        var modelLight = mat4.create( );
+        mat4.translate( modelLight, modelLight, [ 10.0, 0.0, 1.0 ] );
+        mat4.scale( modelLight, modelLight, [0.25, 0.25, 0.25]);
+        shaderProgramL.setUniformMat4( "projection", proj );
+        shaderProgramL.setUniformMat4( "view", view );
+        shaderProgramL.setUniformMat4( "model", modelLight );
+        gl.drawElements( gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0 );
+
+        gl.bindVertexArray( null );
+
+
+        requestAnimationFrame( renderFunc );
+    }
+    document.addEventListener('keydown', function(event) {
+        /*
+            65 => A
+            68 => D
+            83 => S
+            87 => W
+            81 => Q
+            69 => E
+
+            37 => Flecha izq
+            39 => Fecha drcha
+            38 => Fecha arriba
+            40 => Fecha abajo
+
+        */
+        if( event.keyCode == 65 ) // A
+        {
+        }
+    } );
+
+    renderFunc( 0.0 );
+</script>
+</body>
+</html>
