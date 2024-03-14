@@ -124,7 +124,7 @@
 </head>
 
 <body>
-    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <canvas id="myCanvas" width="1080" height="790"></canvas>
     <script type="text/javascript">
         var gl = createContext( "myCanvas" );
 
@@ -236,11 +236,91 @@
         index = gl.getUniformBlockIndex( shaderProgramL.mCompiledShader, "UBO");
         gl.uniformBlockBinding( shaderProgramL.mCompiledShader, index, 0 );
 
+        
+        var cameraPos = vec3.fromValues(5.0, 0.0, 10.0);
+        var cameraFront = vec3.fromValues(0.0, 0.0, -1.0);
+        var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
 
+        function updateCameraView(viewMatrix) {
+            mat4.lookAt(viewMatrix, cameraPos, vec3.add(vec3.create(), cameraPos, cameraFront), cameraUp);
+        }
+
+        var lastX = 0.0;
+        var lastY = 0.0;
+        var yaw = -90.0; // ajusta según sea necesario
+        var pitch = 0.0; // ajusta según sea necesario
+        var sensitivity = 0.1; // ajusta según sea necesario
+
+    
+
+
+        document.addEventListener('keydown', function (event) {
+            const cameraSpeed = 0.1; // ajusta según sea necesario
+
+            switch (event.key) {
+                case 'w':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 's':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 'a':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'd':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'ArrowUp':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+                case 'ArrowDown':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+            }
+        });
+
+            document.addEventListener('mouseup', function () {
+                isMousePressed = false;
+            });
+
+            var isMousePressed = false;
+
+        document.addEventListener('mousedown', function (event) {
+            isMousePressed = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        });
+
+        document.addEventListener('mouseup', function () {
+            isMousePressed = false;
+        });
+
+        document.addEventListener('mousemove', function (event) {
+            if (isMousePressed) {
+                var xOffset = event.clientX - lastX;
+                var yOffset = lastY - event.clientY; // inverso porque el eje Y del mouse está invertido
+
+                lastX = event.clientX;
+                lastY = event.clientY;
+
+                xOffset *= sensitivity;
+                yOffset *= sensitivity;
+
+                yaw += xOffset;
+                pitch += yOffset;
+
+                // No limitar los ángulos pitch para rotar completamente
+                var front = vec3.create();
+                front[0] = Math.cos(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                front[1] = Math.sin(Math.radians(pitch));
+                front[2] = Math.sin(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                vec3.normalize(cameraFront, front);
+            }
+        });
 
         function renderFunc( time )
         {
-            gl.viewport( 0, 0, 500, 500 );
+            gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height);
             gl.clearColor( 0.5, 0.5, 0.0, 1.0 );
 
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -248,9 +328,10 @@
             gl.enable( gl.DEPTH_TEST );
 
             var proj = mat4.create( );
-            mat4.perspective(proj, Math.radians( 60.0 ), 500/500 /*width/height*/, 0.001, 1000.0 );
+            mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height /*width/height*/, 0.001, 1000.0 );
             var view = mat4.create( );
-            mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
+            //mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
+            updateCameraView(view);
             time *= 0.001; // to seconds
             var angle = time * 25.0;
             var model = mat4.create( );
@@ -294,7 +375,7 @@
             shaderProgramL.bind();
 
             var modelLight = mat4.create( );
-            mat4.translate( modelLight, modelLight, [ 10.0, 0.0, 1.0 ] );
+            mat4.translate( modelLight, modelLight, [ 10.0, 0.0, 0.0 ] );
             mat4.scale( modelLight, modelLight, [0.25, 0.25, 0.25]);
             //shaderProgramL.setUniformMat4( "projection", proj );
             //shaderProgramL.setUniformMat4( "view", view );
