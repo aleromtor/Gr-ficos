@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="d745c673-d574-4fa8-8a39-40c41db5eee0" name="Changes" comment="Creation">
-      <change afterPath="$PROJECT_DIR$/Práctica 1/Práctica 1.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/auxiliars.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/cube.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/gl-matrix.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/index-2.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Práctica 1/shader.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Práctica 1/index-2.html" beforeDir="false" afterPath="$PROJECT_DIR$/Práctica 1/index-2.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,22 +16,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 5
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="2dMeJROXwhz4Om2sByIx21bhJcM" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

@@ -254,12 +254,20 @@
         var pitch = 0.0; // ajusta según sea necesario
         var sensitivity = 0.1; // ajusta según sea necesario
 
-    
+        let lightColor=[1.0,0.0,0.0];
+        let viewPos=[ 0.0, 0.0, -20.0 ];
+        let lightPos=[10.0, 0.0, 1.0];
+        let objectColor = [1.0, 0.0, 1.0];
+
+        let n = 5;
+        let ambientStrength = 0.1;
+        let specularStrength = 0.5;
+
 
 
         document.addEventListener('keydown', function (event) {
             const cameraSpeed = 0.1; // ajusta según sea necesario
-
+            const lightMoveSpeed = 0.5;
             switch (event.key) {
                 case 'w':
                     vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
@@ -290,7 +298,12 @@
                     front[2] = Math.sin(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
                     vec3.normalize(cameraFront, front);
                     break;
-                
+                case 'i': // Mover la luz hacia la derecha en el eje X
+                    lightPos[0] -= lightMoveSpeed;
+                    break;
+                case 'o': // Mover la luz hacia la izquierda en el eje X
+                    lightPos[0] += lightMoveSpeed;
+                    break;
             }
         });
 
@@ -333,14 +346,8 @@
             }
         });
 
-let lightColor=[1.0,0.0,0.0];
-let viewPos=[ 0.0, 0.0, -20.0 ];
-let lightPos=[10.0, 0.0, 1.0];
-let objectColor = [1.0, 0.0, 1.0];
 
-let n = 5;
-let ambientStrength = 0.1;
-let specularStrength = 0.5;
+
 
 
 
@@ -408,11 +415,13 @@ let specularStrength = 0.5;
             shaderProgramL.bind();
 
             var modelLight = mat4.create( );
-            mat4.translate( modelLight, modelLight, [ 10.0, 0.0, 0.0 ] );
+            mat4.translate( modelLight, modelLight, [...lightPos] );
             mat4.scale( modelLight, modelLight, [0.25, 0.25, 0.25]);
             //shaderProgramL.setUniformMat4( "projection", proj );
             //shaderProgramL.setUniformMat4( "view", view );
             shaderProgramL.setUniformMat4( "model", modelLight );
+            shaderProgramL.setUniform3f("lightColor", ...lightColor);
+            shaderProgramL.setUniform3f("lightPos", ...lightPos);
             gl.drawElements( gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0 );
 
             gl.bindVertexArray( null );
