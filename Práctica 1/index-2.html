@@ -278,6 +278,10 @@
         let lightLinear = 0.09;
         let lightQuadratic = 0.032;
 
+        // Configuracion de la velocidad de movimiento del cubo
+        let cubePos = [0.0, 0.0, 0.0];
+        let cubeSpeed = 0.1;
+
 
 
 
@@ -329,6 +333,13 @@
                 case 'v': // cambiar de color al rojo
                     lightColor=[1.0,0.0,0.0];
                     break;
+                case 'j': //mover el cubo hacia arriba en el eje Y
+                    cubePos[1] += cubeSpeed;
+                    mat4.translate( model, model, cubePos );
+                    break;
+                case 'n': //mover el cubo hacia abajo en el eje Y
+                    cubePos[1] -= cubeSpeed;
+                    mat4.translate( model, model, cubePos );
             }
         });
 
@@ -393,7 +404,7 @@
             time *= 0.001; // to seconds
             var angle = time * 25.0;
             var model = mat4.create( );
-            mat4.translate( model, model, [ 0.0, 0.0, 0.0 ] );
+            mat4.translate( model, model, cubePos );
             mat4.rotate( model, model, Math.radians( angle ), [ 1.0, 0.5, 0.0 ] );
 
             shaderProgram.bind( );
