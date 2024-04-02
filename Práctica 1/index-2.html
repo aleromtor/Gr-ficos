@@ -415,7 +415,7 @@
             shaderProgramL.bind();
 
             var modelLight = mat4.create( );
-            mat4.translate( modelLight, modelLight, [...lightPos] );
+            mat4.translate( modelLight, modelLight, lightPos);
             mat4.scale( modelLight, modelLight, [0.25, 0.25, 0.25]);
             //shaderProgramL.setUniformMat4( "projection", proj );
             //shaderProgramL.setUniformMat4( "view", view );
