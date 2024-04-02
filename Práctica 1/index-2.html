@@ -304,6 +304,12 @@
                 case 'o': // Mover la luz hacia la izquierda en el eje X
                     lightPos[0] += lightMoveSpeed;
                     break;
+                case 'c': //cambiar de color al amarillo
+                    lightColor=[1.0,0.0,1.0];
+                    break;
+                case 'v': // cambiar de color al rojo
+                    lightColor=[1.0,0.0,0.0];
+                    break;
             }
         });
 
