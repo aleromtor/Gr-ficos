@@ -289,16 +289,37 @@
         let lightQuadratic = 0.032;
 
         // Configuracion de la velocidad de movimiento del cubo
-        let cubePos = [0.0, 0.0, 0.0];
+        const cubePositions = [
+            [ 0.0, 0.0, 0.0],
+            [ 4.0, 10.0, -30.0],
+            [-3.0, -4.4, -5.0],
+            [-7.6, -4.0, -24.6],
+            [ 4.8, -0.8, -7.0],
+            [-4.4, 6.0, -14.0],
+            [ 2.6, -4.0, -5.0],
+            [ 3.0, 4.0, -5.0],
+            [ 3.0, 0.4, -3.0],
+            [-2.6, 2.0, -3.0],
+        ];
+
+        const cubeLights = [
+            [1.0, 0.0, 0.0],  // Rojo
+            [0.0, 1.0, 0.0],  // Verde
+            [0.0, 0.0, 1.0],  // Azul
+            [1.0, 1.0, 0.0],  // Amarillo
+            [0.0, 1.0, 1.0],  // Cian
+            [1.0, 0.0, 1.0],  // Magenta
+            [0.5, 0.0, 0.0],  // Rojo oscuro
+            [0.0, 0.5, 0.0],  // Verde oscuro
+            [0.0, 0.0, 0.5],  // Azul oscuro
+            [0.5, 0.5, 0.5],  // Gris
+        ];
+
         let cubeSpeed = 0.1;
 
         //Configuración de la luz direccional
         let directionalLightDir = [0.0, 1.0, 0.0];
         let directionalLightColor = [0.0, 1.0, 1.0];
-
-
-
-
 
 
         document.addEventListener('keydown', function (event) {
@@ -344,7 +365,7 @@
                     lightColor=[1.0,0.0,1.0];
                     break;
                 case 'v': // cambiar de color al rojo
-                    lightColor=[1.0,0.0,0.0];
+                    lightColor=[1.0,1.0,1.0];
                     break;
                 case 'j': //mover el cubo hacia arriba en el eje Y
                     cubePos[1] += cubeSpeed;
@@ -416,9 +437,14 @@
             updateCameraView(view);
             time *= 0.001; // to seconds
             var angle = time * 25.0;
-            var model = mat4.create( );
-            mat4.translate( model, model, cubePos );
-            mat4.rotate( model, model, Math.radians( angle ), [ 1.0, 0.5, 0.0 ] );
+            /*
+            creo matriz de models del tamaño del array de cubepositions
+            con un for hago las lineas de debajo (creo, traslado, roto)
+            se lo mando al shader uno a uno?
+            como manejo luego el shader
+
+            
+            */
 
             shaderProgram.bind( );
             shaderProgram.setUniform3f("directionalLightDir", ...directionalLightDir);
@@ -427,7 +453,6 @@
             shaderProgram.setUniform3f("lightColor", ...lightColor);
             shaderProgram.setUniform3f("viewPos", viewPos[0],viewPos[1],viewPos[2]);
             shaderProgram.setUniform3f("lightPos", ...lightPos);
-            shaderProgram.setUniform3f("objectColor", ...objectColor);
             // Pasar los valores de atenuación al shader
             shaderProgram.setUniform1f("lightConstant", lightConstant);
             shaderProgram.setUniform1f("lightLinear", lightLinear);
@@ -438,7 +463,17 @@
             shaderProgram.setUniform1f("ambientStrength",ambientStrength);
             shaderProgram.setUniform1f("specularStrength",specularStrength);
 
+            for(let i = 0; i < cubePositions.length ;i++){
+                var model = mat4.create( );
+                mat4.translate( model, model, cubePositions[i] );
+                mat4.rotate( model, model, Math.radians( angle ), [ 1.0, 0.5, 0.0 ] );
+                shaderProgram.setUniform3f("objectColor", ...cubeLights[i]);
 
+                
+                shaderProgram.setUniformMat4( "model", model );
+                gl.bindVertexArray( VAO );
+                gl.drawElements( gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0 );
+            }
             /*
         
         let index;
@@ -464,9 +499,6 @@
 
             //shaderProgram.setUniformMat4( "projection", proj );
             //shaderProgram.setUniformMat4( "view", view );
-            shaderProgram.setUniformMat4( "model", model );
-            gl.bindVertexArray( VAO );
-            gl.drawElements( gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0 );
 
             shaderProgramL.bind();
             
