@@ -446,7 +446,22 @@
             
             */
 
+
+            const orbitRadius = 5.0; // Radio de la órbita
+            const angularSpeed = 0.1; // Velocidad angular
+            const orbitCenter = [0.0, 0.0, 0.0]; // Centro de la órbita
+
+            const angle2 = time * angularSpeed;
+            const lightDirX = orbitCenter[0] + orbitRadius * Math.cos(angle2);
+            const lightDirY = orbitCenter[1];
+            const lightDirZ = orbitCenter[2] + orbitRadius * Math.sin(angle2);
+
+            // Establecer la nueva posición de la luz direccional
+            directionalLightDir = vec3.normalize(vec3.create(), [lightDirX, lightDirY, lightDirZ]);
+
+
             shaderProgram.bind( );
+
             shaderProgram.setUniform3f("directionalLightDir", ...directionalLightDir);
             shaderProgram.setUniform3f("directionalLightColor", ...directionalLightColor);
 
