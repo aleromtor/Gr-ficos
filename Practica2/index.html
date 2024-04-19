@@ -162,7 +162,7 @@ void main( )
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
         gl.enable( gl.DEPTH_TEST );
 
-        //time *= 0.001; // to seconds
+        time *= 0.001; // to seconds
 
     	var proj = mat4.create( );
     	mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height, 0.001, 1000.0 );
@@ -184,12 +184,13 @@ void main( )
         // A partir de aquí, subimos matriz model y demás cosas para cada esfera.
         var model = mat4.create();
         mat4.rotate(model, model, Math.radians(time), vec3.create(0.5, 0.5, 0));
+        mat4.translate(model, model, [10*Math.cos(time), 0, 0])
         shaderProgram.setUniformMat4("model", model);
         // Renderizar la esfera
         gl.bindVertexArray(VAO); // Vincular el VAO de la esfera
 
         // Dibujar la esfera
-        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
 
 
         requestAnimationFrame( renderFunc );
