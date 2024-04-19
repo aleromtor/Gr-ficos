@@ -42,11 +42,12 @@ precision mediump float;
 uniform UBO {
     mat4 projection;
     mat4 view;
+    mat4 model;
 };
 
 void main( )
 {
-    gl_Position = projection * view * model * vec4( ... );
+    gl_Position = projection * view * model * vec4( ...);
 }
 
 </script>
@@ -72,16 +73,28 @@ void main( )
     // CREAR TODOS LOS SHADERPROGRAMS QUE NECESITES
     // ---------------------------------------------------
     let shaderProgram = new ShaderProgram( );
+    shaderProgram.createVertexShader(
+           document.getElementById( "shader-vs" ).text
+        );
+        shaderProgram.createFragmentShader(
+           document.getElementById( "shader-fs" ).text
+        );
+        shaderProgram.compile( );
+        shaderProgram.link( );
+        shaderProgram.autocatching( );
 
     // ---------------------------------------------------
     // CREAMOS EL UBO Y VINCULAMOS TODOS LOS SHADERPROGRAM
     // QUE HARÁN USO DE ESTE UBO
     // ---------------------------------------------------
     // TODO: ShaderProgram debe ser algún Programa que crees y que contenga el UBO
-    //let ubo = new UBO( "UBO", shaderProgram, [ "projection", "view" ]); // Aquí añade todos los uniformes que quieres compartir
+    
+    let ubo = new UBO( "UBO", shaderProgram, [ "projection", "view" ]); // Aquí añade todos los uniformes que quieres compartir
 
+
+    
     // TODO: Realiza esta llamada con cada programa que vayas a utilizar 
-    // ubo.attachProgram( shaderProgram );
+    ubo.attachProgram( shaderProgram );
 
 
     // ---------------------------------------------------
@@ -98,7 +111,8 @@ void main( )
     const sphereGeo = createSphere( );
     const ringGeo = createRing( );
 
-    gl.clearColor( 1.0, 0.5, 0.0, 1.0 );
+    gl.clearColor(0.0, 0.0, 0.2, 1.0);
+
     gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
 
     function renderFunc( time )
@@ -116,9 +130,10 @@ void main( )
         shaderProgram.bind( );
 
         // Aquí subimos los datos para la proyección y la vista
-        //ubo.uploadData( "projection", proj );
-        //ubo.uploadData( "view", view );
-        //ubo.uploadAll( ); // Esta llamada sube todos los datos de golpe
+        ubo.uploadData( "projection", proj );
+        ubo.uploadData( "view", view );
+        ubo.uploadData( "model", mat4.create( ) );
+        ubo.uploadAll( ); // Esta llamada sube todos los datos de golpe
         
         // A partir de aquí, subimos matriz model y demás cosas para cada esfera.
 
@@ -163,7 +178,7 @@ void main( )
             // Make the canvas the same size
             canvas.width  = displayWidth;
             canvas.height = displayHeight;
-            gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
+            gl.viewport( 0, -20, gl.canvas.width, gl.canvas.height );
         }
     }
 
