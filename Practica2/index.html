@@ -77,7 +77,7 @@ void main( )
     shaderProgram.createVertexShader(
            document.getElementById( "shader-vs" ).text
         );
-        shaderProgram.createFragmentShader(
+    shaderProgram.createFragmentShader(
            document.getElementById( "shader-fs" ).text
         );
         shaderProgram.compile( );
@@ -122,8 +122,7 @@ void main( )
         gl.bindVertexArray(VAO);
         // position attribute
         gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( sphereGeo.vertices ),
-        gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( sphereGeo.vertices ),gl.STATIC_DRAW);
         gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(0);
         // normal attribute
@@ -157,12 +156,22 @@ void main( )
             mat4.lookAt(viewMatrix, cameraPos, vec3.add(vec3.create(), cameraPos, cameraFront), cameraUp);
         }    
 
+        var planets = [
+            {orbitSpeed: 3, translation: [5, 0, 0],  axis: [0,0,1], scale: [0.7, 0.7, 0.7], moon:1 },
+            {orbitSpeed: 5, translation: [3, 0, 0],  axis: [0,0,1], scale: [0.6, 0.6, 0.6], moon:0 }
+        ];
+
+        var moons = [
+            {},
+            {orbitSpeed: 4, translation: [3, 0, 0],  axis: [0,0,1], scale: [0.2,0.2, 0.2]}
+        ];
+
     function renderFunc( time )
     {
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
         gl.enable( gl.DEPTH_TEST );
 
-        //time *= 0.001; // to seconds
+        time *= 0.01; // to seconds
 
     	var proj = mat4.create( );
     	mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height, 0.001, 1000.0 );
@@ -182,16 +191,62 @@ void main( )
         ubo.uploadAll( ); // Esta llamada sube todos los datos de golpe
         
         // A partir de aquí, subimos matriz model y demás cosas para cada esfera.
-        var model = mat4.create();
-        mat4.rotate(model, model, Math.radians(time), vec3.create(0.5, 0.5, 0));
-        shaderProgram.setUniformMat4("model", model);
-        // Renderizar la esfera
-        gl.bindVertexArray(VAO); // Vincular el VAO de la esfera
 
-        // Dibujar la esfera
-        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_SHORT, 0);
+        
+        //draw sun
+        var m1 = mat4.create();
+        mat4.rotate(m1, m1, Math.radians(time), [1, 0, 0]);
+        mat4.translate(m1, m1, [0,0,0]);
+        mat4.scale(m1, m1, [2,2,2]);
+        gl.bindVertexArray(VAO);
+        shaderProgram.setUniformMat4("model", m1);
+        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+        
 
 
+
+        for (var i = 0; i < planets.length; i++) {
+
+            //planet creation
+            var planet= planets[i];
+
+            //planet translation
+            var m1 = mat4.create();
+            mat4.rotate(m1, m1, Math.radians(time * planet.orbitSpeed), planet.axis);
+            mat4.translate(m1, m1, planet.translation);
+
+            //planet rotation
+            var m2 = mat4.create();
+            gl.bindVertexArray(VAO);
+            mat4.translate(m1, m1, planet.translation);
+            mat4.rotate(m1, m1, Math.radians(time), planet.axis);
+
+            //model creation
+            var model= mat4.create();
+            mat4.multiply(model, m1, m2);
+            mat4.scale(model, model, planet.scale);
+
+            //print model
+            shaderProgram.setUniformMat4("model", model);
+            gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+
+            if (planet.moon!=0){
+                //moon creation
+                var moon=moons[planet.moon];
+
+                //moon translation
+                var mL = mat4.create();
+                mat4.rotate(mL, mL, Math.radians(time * moon.orbitSpeed), moon.axis);
+                mat4.translate(mL, mL, moon.translation);
+
+                mat4.multiply(mL, m1, mL);
+                mat4.scale(mL, mL, moon.scale);
+                gl.bindVertexArray(VAO);
+                shaderProgram.setUniformMat4("model", mL);
+                gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+            }
+        }
+        resizeCanvas();
         requestAnimationFrame( renderFunc );
     }
 
