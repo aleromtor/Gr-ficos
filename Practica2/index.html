@@ -148,9 +148,9 @@ void main( )
     gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
 
     const initialCameraPos = vec3.fromValues(5.0, 0.0, 10.0);
-        var cameraPos = vec3.fromValues(5.0, 0.0, 10.0);
+        var cameraPos = vec3.fromValues(0.0, 0.0, 20.0);
         var cameraFront = vec3.fromValues(0.0, 0.0, -1.0);
-        var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
+        var cameraUp = vec3.fromValues(1.0, 0.0, 0.0);
 
         function updateCameraView(viewMatrix) {
             mat4.lookAt(viewMatrix, cameraPos, vec3.add(vec3.create(), cameraPos, cameraFront), cameraUp);
@@ -177,8 +177,8 @@ void main( )
     	var proj = mat4.create( );
     	mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height, 0.001, 1000.0 );
     	var view = mat4.create( );
-        mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
-        //updateCameraView(view);
+        //mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
+        updateCameraView(view);
 
         // TODO: Tienes que activar al menos un programa
         shaderProgram.bind( );
@@ -271,6 +271,77 @@ void main( )
         }
         
     } );
+
+    document.addEventListener('keydown', function (event) {
+            const cameraSpeed = 0.1; // ajusta según sea necesario
+            const lightMoveSpeed = 0.5;
+            switch (event.key) {
+                case 'w':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 's':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 'a':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'd':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'ArrowUp':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+                case 'ArrowDown':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+                case 'p': 
+                    vec3.copy(cameraPos, initialCameraPos); // Restablecer posición
+                    yaw = -90.0; // Restablecer yaw
+                    pitch = 0.0; // Restablecer pitch
+                    // Recalcular dirección frontal de la cámara
+                    var front = vec3.create();
+                    front[0] = Math.cos(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
+                    front[1] = Math.sin(glMatrix.glMatrix.toRadian(pitch));
+                    front[2] = Math.sin(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
+                    vec3.normalize(cameraFront, front);
+                    break;
+                
+            }
+        });
+
+    document.addEventListener('mousemove', function (event) {
+            if (isMousePressed) {
+                var xOffset = event.clientX - lastX;
+                var yOffset = lastY - event.clientY; // inverso porque el eje Y del mouse está invertido
+
+                lastX = event.clientX;
+                lastY = event.clientY;
+
+                xOffset *= sensitivity;
+                yOffset *= sensitivity;
+
+                yaw += xOffset;
+                pitch += yOffset;
+
+                // No limitar los ángulos pitch para rotar completamente
+                var front = vec3.create();
+                front[0] = Math.cos(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                front[1] = Math.sin(Math.radians(pitch));
+                front[2] = Math.sin(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                vec3.normalize(cameraFront, front);
+            }
+        });
+
+        var isMousePressed = false;
+
+        document.addEventListener('mousedown', function (event) {
+            isMousePressed = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        });
+
+        document.addEventListener('mouseup', function () {
+            isMousePressed = false;});
 
     function resizeCanvas()
     {
