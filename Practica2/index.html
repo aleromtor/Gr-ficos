@@ -272,6 +272,14 @@ void main( )
         
     } );
 
+
+    var lastX = 0.0;
+        var lastY = 0.0;
+        var yaw = -90.0; // ajusta según sea necesario
+        var pitch = 0.0; // ajusta según sea necesario
+        var sensitivity = 0.1; // ajusta según sea necesario
+
+
     document.addEventListener('keydown', function (event) {
             const cameraSpeed = 0.1; // ajusta según sea necesario
             const lightMoveSpeed = 0.5;
@@ -320,8 +328,8 @@ void main( )
                 xOffset *= sensitivity;
                 yOffset *= sensitivity;
 
-                yaw += xOffset;
-                pitch += yOffset;
+                yaw += yOffset;
+                pitch += xOffset;
 
                 // No limitar los ángulos pitch para rotar completamente
                 var front = vec3.create();
