@@ -227,8 +227,8 @@ void main( )
     	var proj = mat4.create( );
     	mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height, 0.001, 1000.0 );
     	var view = mat4.create( );
-        mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
-        //updateCameraView(view);
+        //mat4.translate( view, view, [ 0.0, 0.0, -20.0 ] );
+        updateCameraView(view);
 
         // TODO: Tienes que activar al menos un programa
         shaderProgram.bind( );
@@ -257,7 +257,7 @@ void main( )
 
         gl.bindVertexArray(VAO);
         shaderProgram.setUniformMat4("model", m1);
-        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_INT, 0);
         
 
 
@@ -288,7 +288,7 @@ void main( )
 
             //print model
             shaderProgram.setUniformMat4("model", model);
-            gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_INT, 0);
                 
             if (planet.moon!=0){
                 //moon creation
@@ -307,7 +307,7 @@ void main( )
                 gl.bindTexture( gl.TEXTURE_2D, moonTextureID );
                 gl.bindVertexArray(VAO);
                 shaderProgram.setUniformMat4("model", mL);
-                gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length*2, gl.UNSIGNED_SHORT, 0);
+                gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_INT, 0);
             }
         }
         resizeCanvas();
@@ -334,7 +334,83 @@ void main( )
         }
         
     } );
+    var lastX = 0.0;
+        var lastY = 0.0;
+        var yaw = -90.0; // ajusta según sea necesario
+        var pitch = 0.0; // ajusta según sea necesario
+        var sensitivity = 0.1; // ajusta según sea necesario
 
+
+    document.addEventListener('keydown', function (event) {
+            const cameraSpeed = 0.1; // ajusta según sea necesario
+            const lightMoveSpeed = 0.5;
+            switch (event.key) {
+                case 'w':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 's':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraFront, cameraSpeed));
+                    break;
+                case 'a':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'd':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), vec3.normalize(vec3.create(), vec3.cross(vec3.create(), cameraFront, cameraUp)), cameraSpeed));
+                    break;
+                case 'ArrowUp':
+                    vec3.add(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+                case 'ArrowDown':
+                    vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
+                    break;
+                case 'p': 
+                    vec3.copy(cameraPos, initialCameraPos); // Restablecer posición
+                    yaw = -90.0; // Restablecer yaw
+                    pitch = 0.0; // Restablecer pitch
+                    // Recalcular dirección frontal de la cámara
+                    var front = vec3.create();
+                    front[0] = Math.cos(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
+                    front[1] = Math.sin(glMatrix.glMatrix.toRadian(pitch));
+                    front[2] = Math.sin(glMatrix.glMatrix.toRadian(yaw)) * Math.cos(glMatrix.glMatrix.toRadian(pitch));
+                    vec3.normalize(cameraFront, front);
+                    break;
+
+            }
+        });
+
+    document.addEventListener('mousemove', function (event) {
+            if (isMousePressed) {
+                var xOffset = event.clientX - lastX;
+                var yOffset = lastY - event.clientY; // inverso porque el eje Y del mouse está invertido
+
+                lastX = event.clientX;
+                lastY = event.clientY;
+
+                xOffset *= sensitivity;
+                yOffset *= sensitivity;
+
+                yaw += xOffset;
+                pitch += yOffset;
+
+                // No limitar los ángulos pitch para rotar completamente
+                var front = vec3.create();
+                front[0] = Math.cos(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                front[1] = Math.sin(Math.radians(pitch));
+                front[2] = Math.sin(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+                vec3.normalize(cameraFront, front);
+            }
+        });
+
+        var isMousePressed = false;
+
+        document.addEventListener('mousedown', function (event) {
+            isMousePressed = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        });
+
+        document.addEventListener('mouseup', function () {
+            isMousePressed = false;});
     function resizeCanvas()
     {
         const canvas = gl.canvas;
