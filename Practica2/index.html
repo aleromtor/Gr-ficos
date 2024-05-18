@@ -150,23 +150,27 @@
                 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array( sphereGeo.indices ),
                 gl.STATIC_DRAW);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////INICIO PROGRAMA
-            const viewPos = vec3.fromValues(5.0, 0.0, 10.0);//posicion camara
-            gl.clearColor(1.0, 0.0, 0.2, 1.0);//color gfondo
+            const viewPos = vec3.fromValues(5.0, 0.0, 20.0);//posicion camara
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);//color gfondo
             gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
 
-            const initialCameraPos = vec3.fromValues(5.0, 0.0, 10.0);
-                var cameraPos = vec3.fromValues(5.0, 0.0, 10.0);
+            const initialCameraPos = vec3.fromValues(5.0, 0.0, 20.0);
+                var cameraPos = vec3.fromValues(5.0, 0.0, 20.0);
                 var cameraFront = vec3.fromValues(0.0, 0.0, -1.0);
                 var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
 
                 function updateCameraView(viewMatrix) {
                     mat4.lookAt(viewMatrix, cameraPos, vec3.add(vec3.create(), cameraPos, cameraFront), cameraUp);
-                }    
+                } 
+                
+                //creamos un array para introducir las texturas de los planetas
+                var arrayTextures = [];
 
                 var planets = [
                     {orbitSpeed: 4, translation: [5, 0, 0],  axis: [0,0,1], scale: [0.7, 0.7, 0.7], moon:1, image:"" },
                     {orbitSpeed: 5, translation: [3, 0, 0],  axis: [0,0,1], scale: [0.6, 0.6, 0.6], moon:0 ,image:""},
-                    {orbitSpeed: 1, translation: [7, 0, 0],  axis: [0,0,1], scale: [0.8, 0.8, 0.8], moon:0,image:"" }
+                    {orbitSpeed: 1, translation: [7, 0, 0],  axis: [0,0,1], scale: [0.8, 0.8, 0.8], moon:0,image:"" },
+                    {orbitSpeed: 1.1, translation: [10, 0, 0],  axis: [0,0,1], scale: [1, 1, 1], moon:0,image:"" }
                 ];
 
                 var moons = [
@@ -205,6 +209,7 @@
                 //TIERRA
                 var planetTexture = new Image( );
                 var planetTextureID = gl.createTexture( );
+                arrayTextures.push(planetTextureID);
                 planetTexture.onload = function( ) {
                     gl.bindTexture(gl.TEXTURE_2D, planetTextureID);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, planetTexture);
@@ -215,6 +220,57 @@
                     gl.bindTexture(gl.TEXTURE_2D, null);
                 };
                 planetTexture.src = "resources/earth_diffuse.jpg";
+
+                //MERCURIO
+                var mercurioTexture = new Image( );
+                var mercurioTextureID = gl.createTexture( );
+                arrayTextures.push(mercurioTextureID);
+                mercurioTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, mercurioTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mercurioTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                mercurioTexture.src = "resources/mercurio.jpg";
+
+                //MARTE
+                var marteTexture = new Image( );
+                var marteTextureID = gl.createTexture( );
+                arrayTextures.push(marteTextureID);
+                marteTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, marteTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, marteTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                marteTexture.src = "resources/marte.jpg";
+
+                //JUPITER
+                var jupiterTexture = new Image( );
+                var jupiterTextureID = gl.createTexture( );
+                arrayTextures.push(jupiterTextureID);
+                jupiterTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, jupiterTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, jupiterTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                jupiterTexture.src = "resources/jupiter.jpg";
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////RENDERFUNC
             function renderFunc( time )
             {
@@ -276,7 +332,7 @@
                     mat4.scale(model, model, planet.scale);
                     gl.activeTexture( gl.TEXTURE0 );
                     shaderProgram.setUniform1i( "diffuseTexture", 0 );
-                    gl.bindTexture( gl.TEXTURE_2D, planetTextureID );
+                    gl.bindTexture( gl.TEXTURE_2D, arrayTextures[i] );
 
                     //print model
                     shaderProgram.setUniformMat4("model", model);
