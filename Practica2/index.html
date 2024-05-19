@@ -265,12 +265,12 @@ void main() {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(sphereGeo.indices),
             gl.STATIC_DRAW);
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////INICIO PROGRAMA
-        const viewPos = vec3.fromValues(5.0, 0.0, 20.0);//posicion camara
+        const viewPos = vec3.fromValues(5.0, 0.0, 40.0);//posicion camara
         gl.clearColor(0.0, 0.0, 0.0, 1.0);//color gfondo
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-        const initialCameraPos = vec3.fromValues(5.0, 0.0, 20.0);
-        var cameraPos = vec3.fromValues(5.0, 0.0, 20.0);
+        const initialCameraPos = vec3.fromValues(5.0, 0.0, 40.0);
+        var cameraPos = vec3.fromValues(5.0, 0.0, 40.0);
         var cameraFront = vec3.fromValues(0.0, 0.0, -1.0);
         var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
 
