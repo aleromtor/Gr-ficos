@@ -622,6 +622,7 @@ void main() {
                     vec3.subtract(cameraPos, cameraPos, vec3.scale(vec3.create(), cameraUp, cameraSpeed));
                     break;
                 case 'p':
+                    cameraPlanet = false;
                     vec3.copy(cameraPos, initialCameraPos); // Restablecer posición
                     yaw = -90.0; // Restablecer yaw
                     pitch = 0.0; // Restablecer pitch
