@@ -194,30 +194,56 @@
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), specFactor);
             vec3 specular = specularStrength * spec * lightColor;
 
-            vec3 result = (ambient + diffuse + specular) * color;
-            fragColor = vec4(result, 1.0);
-        }
-</script>
+            var VAO, VBO, VBO2, VBO3, EBO;
+                VAO = gl.createVertexArray();
+                VBO = gl.createBuffer();
+                VBO2 = gl.createBuffer();
+                VBO3 = gl.createBuffer();
+                EBO = gl.createBuffer ();
+                gl.bindVertexArray(VAO);
+                // position attribute
+                gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( sphereGeo.vertices ),gl.STATIC_DRAW);
+                gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(0);
+                // normal attribute
+                gl.bindBuffer(gl.ARRAY_BUFFER, VBO2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( sphereGeo.normals ),
+                gl.STATIC_DRAW);
+                gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(1);
+                // texCoord attribute
+                gl.bindBuffer(gl.ARRAY_BUFFER, VBO3);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( sphereGeo.texCoords ),
+                gl.STATIC_DRAW);
+                gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(2);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array( sphereGeo.indices ),
+                gl.STATIC_DRAW);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////INICIO PROGRAMA
+            const viewPos = vec3.fromValues(5.0, 0.0, 20.0);//posicion camara
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);//color gfondo
+            gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
 
-    <!--/////////////////////////////////////////////////////////////////////////////////////////////////////////// FIN DE SHADERS-->
-</head>
+            const initialCameraPos = vec3.fromValues(5.0, 0.0, 20.0);
+                var cameraPos = vec3.fromValues(5.0, 0.0, 20.0);
+                var cameraFront = vec3.fromValues(0.0, 0.0, -1.0);
+                var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
 
-<body>
-    <canvas id="myCanvas" width="500" height="500"></canvas>
-    <script type="text/javascript">
-        const gl = createContext("myCanvas");
+                function updateCameraView(viewMatrix) {
+                    mat4.lookAt(viewMatrix, cameraPos, vec3.add(vec3.create(), cameraPos, cameraFront), cameraUp);
+                } 
+                
+                //creamos un array para introducir las texturas de los planetas
+                var arrayTextures = [];
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////CREACION DE SHADERS
-        let shaderProgram = new ShaderProgram();
-        shaderProgram.createVertexShader(
-            document.getElementById("shader-vs").text
-        );
-        shaderProgram.createFragmentShader(
-            document.getElementById("shader-fs").text
-        );
-        shaderProgram.compile();
-        shaderProgram.link();
-        shaderProgram.autocatching();
+                var planets = [
+                    {orbitSpeed: 4, translation: [5, 0, 0],  axis: [0,0,1], scale: [0.7, 0.7, 0.7], moon:1, image:"" },
+                    {orbitSpeed: 5, translation: [3, 0, 0],  axis: [0,0,1], scale: [0.6, 0.6, 0.6], moon:0 ,image:""},
+                    {orbitSpeed: 1, translation: [7, 0, 0],  axis: [0,0,1], scale: [0.8, 0.8, 0.8], moon:0,image:"" },
+                    {orbitSpeed: 1.1, translation: [10, 0, 0],  axis: [0,0,1], scale: [1, 1, 1], moon:0,image:"" }
+                ];
 
         let ubo = new UBO("UBO", shaderProgram, ["projection", "view"]);//uniformes que quieres compartir
         ubo.attachProgram(shaderProgram);
@@ -501,14 +527,75 @@
                 mat4.scale(model, model, planet.scale);
 
                 //TIERRA
-                shaderProgramEarth.bind();
-                ubo2.uploadData("projection", proj);
-                ubo2.uploadData("view", view);
-                ubo2.uploadAll();
+                var planetTexture = new Image( );
+                var planetTextureID = gl.createTexture( );
+                arrayTextures.push(planetTextureID);
+                planetTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, planetTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, planetTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-                gl.activeTexture(gl.TEXTURE0);
-                shaderProgramEarth.setUniform1i("diffuseTexture", 0);
-                gl.bindTexture(gl.TEXTURE_2D, earthDiffuseTextureID);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                planetTexture.src = "resources/earth_diffuse.jpg";
+
+                //MERCURIO
+                var mercurioTexture = new Image( );
+                var mercurioTextureID = gl.createTexture( );
+                arrayTextures.push(mercurioTextureID);
+                mercurioTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, mercurioTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mercurioTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                mercurioTexture.src = "resources/mercurio.jpg";
+
+                //MARTE
+                var marteTexture = new Image( );
+                var marteTextureID = gl.createTexture( );
+                arrayTextures.push(marteTextureID);
+                marteTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, marteTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, marteTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                marteTexture.src = "resources/marte.jpg";
+
+                //JUPITER
+                var jupiterTexture = new Image( );
+                var jupiterTextureID = gl.createTexture( );
+                arrayTextures.push(jupiterTextureID);
+                jupiterTexture.onload = function( ) {
+                    gl.bindTexture(gl.TEXTURE_2D, jupiterTextureID);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, jupiterTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                };
+                jupiterTexture.src = "resources/jupiter.jpg";
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////RENDERFUNC
+            function renderFunc( time )
+            {
+                gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+                gl.enable( gl.DEPTH_TEST );
 
                 gl.activeTexture(gl.TEXTURE1);
                 shaderProgramEarth.setUniform1i("normalTexture", 1);
@@ -546,7 +633,19 @@
                     shaderProgram.setUniform1i("diffuseTexture", 0);
                     gl.bindTexture(gl.TEXTURE_2D, moonTextureID);
                     gl.bindVertexArray(VAO);
-                    shaderProgram.setUniformMat4("model", mL);
+                    mat4.translate(m1, m1, planet.translation);
+                    mat4.rotate(m1, m1, Math.radians(time), planet.axis);
+
+                    //model creation
+                    var model= mat4.create();
+                    mat4.multiply(model, m1, m2);
+                    mat4.scale(model, model, planet.scale);
+                    gl.activeTexture( gl.TEXTURE0 );
+                    shaderProgram.setUniform1i( "diffuseTexture", 0 );
+                    gl.bindTexture( gl.TEXTURE_2D, arrayTextures[i] );
+
+                    //print model
+                    shaderProgram.setUniformMat4("model", model);
                     gl.drawElements(gl.TRIANGLES, sphereGeo.indices.length, gl.UNSIGNED_INT, 0);
                 }
             }
